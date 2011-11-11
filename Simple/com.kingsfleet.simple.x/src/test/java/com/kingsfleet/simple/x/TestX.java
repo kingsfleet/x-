@@ -1,3 +1,5 @@
+// Distributed under Apache License 2.0 http://www.apache.org/licenses/LICENSE-2.0
+// Copyright Gerard Davison 2011
 package com.kingsfleet.simple.x;
 
 import java.io.StringReader;
