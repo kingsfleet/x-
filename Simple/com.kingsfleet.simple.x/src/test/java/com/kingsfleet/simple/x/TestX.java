@@ -44,7 +44,7 @@ public class TestX {
             dumpToString(x).contains("textst"));
         
         assertNotNull(
-            "Should be able to find in the children",
+            "Should be able to find new node in the children",
             x.select("n:textst"));
     }
 

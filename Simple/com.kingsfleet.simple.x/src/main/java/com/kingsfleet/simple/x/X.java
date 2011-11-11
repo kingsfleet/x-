@@ -40,10 +40,27 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 /**
- * TODO children/attributes be able to add, subclass of List?
- *      implement add and remove methods of AbstractList
- *      register new namespace prefixes
- *      get/set on elements default to attribure if prefix with @
+ * X aims to be a very simple XML api for reading and writing properties with
+ * as a little boilerplate as possible. For example the following code allows you
+ * to read from a stream and then select a value using the predefined n: prefix
+ * take from the root element:
+ * <pre>
+ *     X x = X.in(inputStream);
+ *     boolean enabled = "true".equals(x.get("n:project/@enabled"));
+ *     if (!enabled)
+ *     {
+ *        x.set("n:project/@enabled", "true");
+ *     }
+ *     x.out(outputStream);
+ * </pre>
+ * <p>In order to simplify the API there is only one set method used for both element
+ * and attribute values. You can select or selectList in order to get ranges or child
+ * X elements.</p>
+ * 
+ * @TODO attributes be able to add as we can for elements?
+ * @TODO implement add and remove methods of AbstractList
+ * @TODO register new namespace prefixes
+ * @TODO get/set on elements default to attribure if prefix with @
  */
 
 public class X {
