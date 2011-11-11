@@ -1,5 +1,6 @@
 package com.kingsfleet.simple.x;
 
+import java.io.StringReader;
 import java.io.StringWriter;
 
 import org.junit.Test;
@@ -96,7 +97,16 @@ public class TestX {
      * @return An X with very simple test data in it
      */
     private X getSimpleTestData() {
-        X x = X.in(TestX.class.getResourceAsStream("verySimpleTest.xml"));
+        
+        StringReader sr = new StringReader("<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n" + 
+        "<simple xmlns=\"http://example.com\">\n" + 
+        "\n" + 
+        "  <elementValue>ElementValue</elementValue>\n" + 
+        "  <attributeValue attr=\"AttributeValue\" />\n" + 
+        "\n" + 
+        "</simple>");
+        
+        X x = X.in(sr);
         return x;
     }
 }

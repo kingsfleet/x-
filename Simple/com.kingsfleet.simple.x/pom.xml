@@ -4,7 +4,7 @@
 
   <groupId>com.kingsfleet.simple</groupId>
   <artifactId>com.kingsfleet.simple.x</artifactId>
-  <version>0.1-SNAPSHOT</version>
+  <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>com.kingsfleet.simple.x</name>
@@ -62,4 +62,9 @@
       </resource>
     </resources>
   </build>
+  <parent>
+    <groupId>com.kingsfleet.simple</groupId>
+    <artifactId>Simple</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
 </project>
