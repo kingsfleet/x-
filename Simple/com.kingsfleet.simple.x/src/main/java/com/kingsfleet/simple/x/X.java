@@ -66,6 +66,8 @@ import org.xml.sax.InputSource;
 public class X {
     private Node _node;
     private Context _context;
+    private XList _children;
+    private XLIst _attributes;
 
 
     // Methods for creating and storing X
@@ -81,6 +83,7 @@ public class X {
         if (node.getNamespaceURI() != null) {
             _context.prefixToNamespace.put("n", node.getNamespaceURI());
         }
+        _context.nodeToX.put(node, this);
     }
 
 
@@ -132,7 +135,7 @@ public class X {
             Node node = (Node)_context.xpath.evaluate(xpath, _node, XPathConstants.NODE);
 
             // TODO return a null X here?
-            return node != null ? new X(node, _context) : null;
+            return node != null ? _context.findOrCreate(node) : null;
         } catch (Exception ex) {
             throw new XException("Problem processing xpath", ex);
         }
@@ -144,7 +147,7 @@ public class X {
             NodeList list = (NodeList)_context.xpath.evaluate(xpath, _node, XPathConstants.NODESET);
             int i = list.getLength();
             for (int listItem = 0; listItem < i; listItem++) {
-                result.add(new X(list.item(0), _context));
+                result.add(_context.findOrCreate(list.item(listItem)));
             }
             return result;
         } catch (Exception ex) {
@@ -153,36 +156,56 @@ public class X {
     }
 
     public XList children() {
-        final NodeList list = _node.getChildNodes();
 
-        class EList extends AbstractList<X> implements XList {
+        if (_children == null) {
+                
+            class EList extends AbstractList<X> implements XList {
+    
+                @Override
+                public X get(int index) {
+                    NodeList list = _node.getChildNodes();
+                    return _context.findOrCreate(list.item(0));
+                }
+    
+                @Override
+                public int size() {
+                    NodeList list = _node.getChildNodes();
+                    return list.getLength();
+                }
+                
+                @Override
+                public X remove(int index) {
+                    NodeList list = _node.getChildNodes();
+                    if (index < 0 && index >= size()) {
+                        throw new IndexOutOfBoundsException(
+                            "Index " + index + " out of bounds");
+                    }
 
-            @Override
-            public X get(int index) {
-                return new X(list.item(0), _context);
+                    Node child = _node.removeChild(
+                        list.item(index));
+                    modCount ++;
+                    return _context.findOrCreate(child);
+                }
+    
+                @Override
+                public X create(String localname) {
+                    return create(_node.getNamespaceURI(), localname);
+                }
+    
+                @Override
+                public X create(String namespace, String localname) {
+                    Element newElement = _node.getOwnerDocument().createElementNS(namespace, localname);
+                    _node.appendChild(newElement);
+                    modCount++;
+                    return _context.findOrCreate(newElement);
+                }
             }
-
-            @Override
-            public int size() {
-                return list.getLength();
-            }
-
-            @Override
-            public X create(String localname) {
-                return create(_node.getNamespaceURI(), localname);
-            }
-
-            @Override
-            public X create(String namespace, String localname) {
-                Element newElement = _node.getOwnerDocument().createElementNS(namespace, localname);
-                _node.appendChild(newElement);
-                modCount++;
-                return new X(newElement, _context);
-            }
+    
+    
+            _children = new EList();
         }
-
-
-        return new EList();
+        
+        return _children;
     }
 
     public List<X> attributes() {
@@ -190,7 +213,7 @@ public class X {
         NamedNodeMap list = _node.getAttributes();
         int i = list.getLength();
         for (int listItem = 0; listItem < i; listItem++) {
-            result.add(new X(list.item(0), _context));
+            result.add(_context.findOrCreate(list.item(listItem)));
         }
         return result;
     }
@@ -313,6 +336,17 @@ public class X {
                     return prefixToNamespace.keySet().iterator();
                 }
             });
+        }
+        
+        final Map<Node, X> nodeToX = new HashMap<Node,X>();
+        private X findOrCreate(Node node) {
+            X found = nodeToX.get(node);
+            if (found==null) {
+                found = new X(node, this);
+                nodeToX.put(node, found);
+            }
+            
+            return found;
         }
     }
 }
