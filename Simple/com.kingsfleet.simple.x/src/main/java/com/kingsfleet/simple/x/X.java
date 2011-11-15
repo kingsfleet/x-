@@ -16,9 +16,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -67,7 +69,7 @@ public class X {
     private Node _node;
     private Context _context;
     private XList _children;
-    private XLIst _attributes;
+    private XList _attributes;
 
 
     // Methods for creating and storing X
@@ -87,6 +89,19 @@ public class X {
     }
 
 
+
+    public static X in(String namespace, String localname) {
+        DocumentBuilderFactory bf = DocumentBuilderFactory.newInstance();
+        Document doc;
+        try {
+            doc = bf.newDocumentBuilder().newDocument();
+        } catch (ParserConfigurationException e) {
+            throw new XException("Problem creating document", e);
+        }
+        return new X(doc).children().create(namespace, localname);
+    }
+
+
     public static X in(InputStream is) {
         return in(new InputSource(is));
     }
@@ -99,6 +114,16 @@ public class X {
         try {
             DocumentBuilderFactory bf = DocumentBuilderFactory.newInstance();
             bf.setNamespaceAware(true);
+            
+            try
+            {
+                bf.setFeature(
+                    XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            }
+            catch (ParserConfigurationException ex) {
+                // Ingore working around problems with the XDK
+            }
+            
             DocumentBuilder builder = bf.newDocumentBuilder();
             Document document = builder.parse(is);
             return new X(document.getDocumentElement());
@@ -110,7 +135,8 @@ public class X {
 
     public void out(OutputStream os) {
         try {
-            TransformerFactory.newInstance().newTransformer().transform(new DOMSource(_node), new StreamResult(os));
+            _context.transformerFactory.newTransformer()
+                .transform(new DOMSource(_node), new StreamResult(os));
         } catch (Exception ex) {
             throw new XException("Problem writing XML", ex);
         }
@@ -118,7 +144,8 @@ public class X {
 
     public void out(Writer os) {
         try {
-            TransformerFactory.newInstance().newTransformer().transform(new DOMSource(_node), new StreamResult(os));
+            _context.transformerFactory.newTransformer()
+                .transform(new DOMSource(_node), new StreamResult(os));
         } catch (Exception ex) {
             throw new XException("Problem writing XML", ex);
         }
@@ -194,7 +221,8 @@ public class X {
     
                 @Override
                 public X create(String namespace, String localname) {
-                    Element newElement = _node.getOwnerDocument().createElementNS(namespace, localname);
+                    Document owner = _node instanceof Document ? (Document)_node : _node.getOwnerDocument();
+                    Element newElement = owner.createElementNS(namespace, localname);
                     _node.appendChild(newElement);
                     modCount++;
                     return _context.findOrCreate(newElement);
@@ -208,7 +236,7 @@ public class X {
         return _children;
     }
 
-    public List<X> attributes() {
+    public XList attributes() {
         if (_attributes == null) {
                 
             class AttrList extends AbstractList<X> implements XList {
@@ -339,6 +367,12 @@ public class X {
 
 
     public static interface XList extends List<X> {
+        /**
+         * @return In the case of a child list return an element with the
+         *  same namespace as the parent, in the case of an attribute list
+         *  return an attribute with a blank namespace as this seems like the 
+         *  most common default.
+         */
         public X create(String name);
 
         public X create(String namepace, String name);
@@ -359,8 +393,14 @@ public class X {
         }
     }
 
+
+
+    /**
+     * A shared context
+     */
     private static class Context {
         final Map<String, String> prefixToNamespace = new HashMap<String, String>();
+        final TransformerFactory transformerFactory = TransformerFactory.newInstance();
         final XPath xpath = XPathFactory.newInstance().newXPath();
         {
             xpath.setNamespaceContext(new NamespaceContext() {
