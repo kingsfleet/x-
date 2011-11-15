@@ -80,6 +80,29 @@ public class TestX {
     }
 
 
+    @Test
+    public void testCreateNew() {
+    
+        X x = X.in("http://www.example.com", "localname");
+        x.attributes().create("attribute").set("value");
+
+        String dumpToString = dumpToString(x);
+        assertTrue(
+            "dumped xml should contain the root element", 
+            dumpToString.contains("localname"));
+        assertTrue(
+            "dumped xml should contain the namespace", 
+            dumpToString.contains("http://www.example.com"));
+
+        assertTrue(
+            "dumped xml should contain the attribute", 
+            dumpToString.contains("attribute"));
+        assertTrue(
+            "dumped xml should contain the value", 
+            dumpToString.contains("value"));
+
+    }
+
 
 
 
