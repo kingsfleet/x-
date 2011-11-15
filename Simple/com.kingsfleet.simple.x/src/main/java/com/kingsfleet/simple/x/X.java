@@ -209,13 +209,56 @@ public class X {
     }
 
     public List<X> attributes() {
-        List<X> result = new ArrayList<X>();
-        NamedNodeMap list = _node.getAttributes();
-        int i = list.getLength();
-        for (int listItem = 0; listItem < i; listItem++) {
-            result.add(_context.findOrCreate(list.item(listItem)));
+        if (_attributes == null) {
+                
+            class AttrList extends AbstractList<X> implements XList {
+        
+                @Override
+                public X get(int index) {
+                    NamedNodeMap list = _node.getAttributes();
+                    return _context.findOrCreate(list.item(0));
+                }
+        
+                @Override
+                public int size() {
+                    NamedNodeMap list = _node.getAttributes();
+                    return list.getLength();
+                }
+                
+                @Override
+                public X remove(int index) {
+                    NamedNodeMap list = _node.getAttributes();
+                    if (index < 0 && index >= size()) {
+                        throw new IndexOutOfBoundsException(
+                            "Index " + index + " out of bounds");
+                    }
+
+                    Node child = _node.removeChild(
+                        list.item(index));
+                    modCount ++;
+                    return _context.findOrCreate(child);
+                }
+        
+                @Override
+                public X create(String localname) {
+                    // Assume unqualified attributes
+                    return create(null, localname);
+                }
+        
+                @Override
+                public X create(String namespace, String localname) {
+                    Attr newAttr = _node.getOwnerDocument().createAttributeNS(namespace, localname);
+                    ((Element)_node).setAttributeNodeNS(newAttr);
+                    modCount++;
+                    return _context.findOrCreate(newAttr);
+                }
+            }
+        
+        
+            _attributes = new AttrList();
         }
-        return result;
+        
+        return _attributes;
     }
 
     // Get and set values
