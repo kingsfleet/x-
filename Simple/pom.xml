@@ -2,9 +2,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.kingsfleet.simple</groupId>
-  <artifactId>Simple</artifactId>
-  <version>1.0-SNAPSHOT</version>
-  <description>Super POM for Simple</description>
+  <artifactId>x-project</artifactId>
+  <version>0.1-SNAPSHOT</version>
+  <description>Project x!</description>
   <modules>
     <module>com.kingsfleet.simple.x</module>
     <module>com.kingsfleet.simple.x.jaxrs</module>

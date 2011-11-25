@@ -1,4 +1,8 @@
-// Distributed under Apache License 2.0 http://www.apache.org/licenses/LICENSE-2.0
+/*
+* // Distributed under Apache License 2.0 http://www.apache.org/licenses/LICENSE-2.0
+* // Copyright Gerard Davison 2011
+*
+*/// Distributed under Apache License 2.0 http://www.apache.org/licenses/LICENSE-2.0
 // Copyright Gerard Davison 2011
 package com.kingsfleet.simple.x;
 
@@ -98,7 +102,13 @@ public class X {
         } catch (ParserConfigurationException e) {
             throw new XException("Problem creating document", e);
         }
-        return new X(doc).children().create(namespace, localname);
+        
+        // Create element here so namespace prefix n: is properly configured
+        //
+        Element element = doc.createElementNS(namespace, localname);
+        doc.appendChild(element);
+
+        return new X(element);
     }
 
 
@@ -149,6 +159,31 @@ public class X {
         } catch (Exception ex) {
             throw new XException("Problem writing XML", ex);
         }
+    }
+
+
+    // parent method
+    
+    public X parent() {
+        Node parent;
+        if (_node instanceof Attr) {
+            parent = ((Attr)_node).getOwnerElement();
+        }
+        else {
+            parent = _node.getParentNode();
+        }
+        
+        return parent!=null ?
+            _context.findOrCreate(parent) : null;
+    }
+    
+    // Register a new namespace
+    
+    /**
+     * Register a new prefix for this context, affects everything in the tree.
+     */
+    public void prefix(String prefix, String namespace) {
+        _context.prefixToNamespace.put(prefix, namespace);
     }
 
 
@@ -260,9 +295,10 @@ public class X {
                         throw new IndexOutOfBoundsException(
                             "Index " + index + " out of bounds");
                     }
-
-                    Node child = _node.removeChild(
-                        list.item(index));
+    
+                    Node item = list.item(index);
+                    Node child = list.removeNamedItemNS(
+                        item.getNamespaceURI(), item.getLocalName());
                     modCount ++;
                     return _context.findOrCreate(child);
                 }

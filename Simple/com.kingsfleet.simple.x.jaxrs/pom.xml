@@ -2,8 +2,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.kingsfleet.simple</groupId>
-    <artifactId>com.kingsfleet.simple.x.jaxrs</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <artifactId>x.jaxrs</artifactId>
+<!--    <version>1.0-SNAPSHOT</version> -->
+    
+    <name>x! for JAX-RS</name>
+    <url>https://github.com/kingsfleet/x-</url>
+    
+    
     <description>Provide Message Body Readers and Writers for JAX-RS</description>
     <build>
         <resources>
@@ -18,8 +23,8 @@
     <dependencies>
         <dependency>
             <groupId>com.kingsfleet.simple</groupId>
-            <artifactId>com.kingsfleet.simple.x</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <artifactId>x</artifactId>
+            <version>0.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -38,7 +43,7 @@
     </dependencies>
     <parent>
         <groupId>com.kingsfleet.simple</groupId>
-        <artifactId>Simple</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <artifactId>x-project</artifactId>
+        <version>0.1-SNAPSHOT</version>
     </parent>
 </project>

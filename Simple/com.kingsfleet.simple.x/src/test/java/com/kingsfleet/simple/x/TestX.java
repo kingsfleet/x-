@@ -5,6 +5,9 @@ package com.kingsfleet.simple.x;
 import java.io.StringReader;
 import java.io.StringWriter;
 
+import java.util.ConcurrentModificationException;
+import java.util.Iterator;
+
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -81,7 +84,7 @@ public class TestX {
 
 
     @Test
-    public void testCreateNew() {
+    public void createNewElementAndAttribute() {
     
         X x = X.in("http://www.example.com", "localname");
         x.attributes().create("attribute").set("value");
@@ -103,10 +106,94 @@ public class TestX {
 
     }
 
+    @Test
+    public void  reateAttrBreaksIterator() {
+    
+        X x = X.in("http://www.example.com", "localname");
+        X.XList attributes = x.attributes();
+        Iterator<X> iterator = attributes.iterator();
+        attributes.create("attribute").set("value");
+
+        try {
+            iterator.next();
+            assertTrue("Should have throw a CME exception", false);
+        }
+        catch (ConcurrentModificationException dme) {
+            // This is expected
+        }
+    }
+
+    @Test
+    public void removeAttrBreaksIterator() {
+    
+        X x = X.in("http://www.example.com", "localname");
+        X.XList attributes = x.attributes();
+        attributes.create("attribute").set("value");
+
+        Iterator<X> iterator = attributes.iterator();
+        attributes.remove(0);
+        
+        try {
+            iterator.next();
+            assertTrue("Should have throw a CME exception", false);
+        }
+        catch (ConcurrentModificationException dme) {
+            // This is expected
+        }
+    }
+
+
+    @Test
+    public void createElemBreaksIterator() {
+    
+        X x = X.in("http://www.example.com", "localname");
+        X.XList children = x.children();
+        Iterator<X> iterator = children.iterator();
+        children.create("newChild");
+
+        try {
+            iterator.next();
+            assertTrue("Should have throw a CME exception", false);
+        }
+        catch (ConcurrentModificationException dme) {
+            // This is expected
+        }
+    }
+
+    @Test
+    public void removeElemNBreaksIterator() {
+    
+        X x = X.in("http://www.example.com", "localname");
+        X.XList children = x.children();
+        children.create("newChild");
+
+        Iterator<X> iterator = children.iterator();
+        children.remove(0);
+        
+        try {
+            iterator.next();
+            assertTrue("Should have throw a CME exception", false);
+        }
+        catch (ConcurrentModificationException dme) {
+            // This is expected
+        }
+    }
 
 
 
 
+
+
+
+
+
+
+
+
+
+    //
+    //
+    //
 
 
     /**
